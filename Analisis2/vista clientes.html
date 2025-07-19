@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Cartelera de Cine</title>
+	<style>
+		body {
+			font-family: 'Segoe UI', Arial, sans-serif;
+			background: #f2f2f2;
+			margin: 0;
+			padding: 0;
+		}
+		header {
+			background: #002147;
+			color: #fff;
+			padding: 24px 0;
+			text-align: center;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+		}
+		.cartelera-container {
+			max-width: 1200px;
+			margin: 32px auto;
+			padding: 0 16px;
+		}
+		.cartelera-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 24px;
+		}
+		.pelicula-card {
+			background: #fff;
+			border-radius: 10px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			transition: transform 0.2s;
+		}
+		.pelicula-card:hover {
+			transform: translateY(-6px) scale(1.03);
+			box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+		}
+		.pelicula-img {
+			width: 100%;
+			height: 220px;
+			object-fit: cover;
+			background: #e0e0e0;
+		}
+		.pelicula-info {
+			padding: 16px;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+		.pelicula-titulo {
+			font-size: 1.2em;
+			font-weight: bold;
+			color: #002147;
+			margin-bottom: 8px;
+		}
+		.pelicula-detalle {
+			font-size: 0.98em;
+			color: #444;
+			margin-bottom: 4px;
+		}
+		.form-container {
+			max-width: 400px;
+			margin: 40px auto 0 auto;
+			background: #fff;
+			padding: 24px 20px;
+			border-radius: 10px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+		}
+		.form-container h2 {
+			color: #002147;
+			margin-bottom: 18px;
+			text-align: center;
+		}
+		.form-group {
+			margin-bottom: 14px;
+		}
+		.form-group label {
+			display: block;
+			margin-bottom: 6px;
+			color: #222;
+			font-weight: 500;
+		}
+		.form-group input[type="text"], .form-group input[type="url"] {
+			width: 100%;
+			padding: 8px;
+			border: 1px solid #bbb;
+			border-radius: 5px;
+			font-size: 1em;
+			box-sizing: border-box;
+		}
+		.form-container button {
+			width: 100%;
+			background: #002147;
+			color: #fff;
+			border: none;
+			padding: 12px;
+			border-radius: 5px;
+			font-size: 1.1em;
+			cursor: pointer;
+			transition: background 0.2s;
+		}
+		.form-container button:hover {
+			background: #005fa3;
+		}
+		@media (max-width: 600px) {
+			.cartelera-container {
+				padding: 0 4px;
+			}
+			.form-container {
+				padding: 16px 6px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<h1>Cartelera de Cine</h1>
+	</header>
+	<div class="cartelera-container">
+		<div class="cartelera-grid" id="cartelera">
+			<!-- Las tarjetas de películas se llenarán dinámicamente -->
+		</div>
+	</div>
+
+	<div class="form-container">
+		<h2>Agregar Película</h2>
+		<form id="formPelicula">
+			<div class="form-group">
+				<label for="nombre">Nombre</label>
+				<input type="text" id="nombre" required>
+			</div>
+			<div class="form-group">
+				<label for="horario">Horario</label>
+				<input type="text" id="horario" required>
+			</div>
+			<div class="form-group">
+				<label for="region">Región</label>
+				<input type="text" id="region" required>
+			</div>
+			<div class="form-group">
+				<label for="categoria">Categoría</label>
+				<input type="text" id="categoria" required>
+			</div>
+			<div class="form-group">
+				<label for="imagen">URL de Imagen (opcional)</label>
+				<input type="url" id="imagen">
+			</div>
+			<button type="submit">Agregar</button>
+		</form>
+	</div>
+
+	<script>
+		// Cargar cartelera al iniciar
+		function cargarCartelera() {
+			fetch('https://localhost:5001/api/cartelera')
+				.then(res => res.json())
+				.then(data => {
+					const grid = document.getElementById('cartelera');
+					grid.innerHTML = '';
+					data.forEach(pelicula => {
+						const card = document.createElement('div');
+						card.className = 'pelicula-card';
+						const imgSrc = pelicula.imagen && pelicula.imagen.trim() !== '' 
+							? pelicula.imagen 
+							: 'https://via.placeholder.com/400x220?text=Sin+Imagen';
+						card.innerHTML = `
+							<img class="pelicula-img" src="${imgSrc}" alt="Imagen de ${pelicula.nombre}">
+							<div class="pelicula-info">
+								<div>
+									<div class="pelicula-titulo">${pelicula.nombre}</div>
+									<div class="pelicula-detalle"><b>Horario:</b> ${pelicula.horario}</div>
+									<div class="pelicula-detalle"><b>Región:</b> ${pelicula.region}</div>
+									<div class="pelicula-detalle"><b>Categoría:</b> ${pelicula.categoria}</div>
+								</div>
+							</div>
+						`;
+						grid.appendChild(card);
+					});
+				});
+		}
+
+		document.getElementById('formPelicula').addEventListener('submit', function(e) {
+			e.preventDefault();
+			const pelicula = {
+				nombre: document.getElementById('nombre').value,
+				horario: document.getElementById('horario').value,
+				region: document.getElementById('region').value,
+				categoria: document.getElementById('categoria').value,
+				imagen: document.getElementById('imagen').value
+			};
+			fetch('https://localhost:5001/api/cartelera', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(pelicula)
+			})
+			.then(() => {
+				cargarCartelera();
+				this.reset();
+			});
+		});
+
+		cargarCartelera();
+	</script>
+</body>
+</html>
