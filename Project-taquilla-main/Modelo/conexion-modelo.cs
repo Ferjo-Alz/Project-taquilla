@@ -1,8 +1,39 @@
-﻿using System;
+﻿//Librerias 
+using MySql.Data.MySqlClient;
+using System;
+using System.Data;
 
-public class Class1
+//Se utilizará para llamar la clase en otros archivos donde se necesite la conexion de la base de datos
+namespace TaquillaPeliculas.Modelo
 {
-	public Class1()
-	{
-	}
+    public class Conexion
+    {   //Conecta la base de datos desde un localhost (con puerto 3306) de la base de datos "siu" con el usuario "usuprueba" y su contraseña
+        private static readonly string connectionString = "server=localhost;port=3306;database=siu;user=usuprueba;password=123456;SslMode=none";
+
+        //Manejo de errores y excepciones con un trycatch para evitar que el programa falle en caso de error
+        public static MySqlConnection ObtenerConexion()
+        {
+            MySqlConnection conn = new MySqlConnection(connectionString);
+            try
+            {   //abre la conexion
+                conn.Open();
+                return conn;
+            } //maneja una excepcion si la conexion falla
+            catch (MySqlException ex)
+            {
+                Console.WriteLine("Conexión con la base de datos fallida: " + ex.Message);
+                return null;
+            }
+        }
+
+        //Se cierra la conexion con la base de datos
+        public static void CerrarConexion(MySqlConnection conn)
+        {
+            if (conn != null && conn.State == ConnectionState.Open)
+            {
+                conn.Close();
+            }
+        }
+    }
 }
+
